@@ -70,7 +70,39 @@ void cpu6502::IMP() {
 	
 }
 
+void cpu6502::ZPG() {
+	addr = input;
+	data = m->read(addr);		// todo: different ranges must go to different devices //
+}
+
+void cpu6502::ZPX() {
+	addr = ((input + x) % 256);
+	data = m->read(addr);		// todo: different ranges must go to different devices //
+}
+
+void cpu6502::ZPY() {
+	addr = ((input + y) % 256);
+	data = m->read(addr);		// todo: different ranges must go to different devices //
+}
+
 // OPCODES //
+void cpu6502::AND() {
+
+	a = a & data;
+
+	// Z //
+	if (a & 0xFF)
+		reg.Z = 0;
+	else
+		reg.Z = 1;
+
+	// N //
+	if (a & (1 << 7))
+		reg.N = 1;
+	else
+		reg.N = 0;
+}
+
 void cpu6502::CLC() {
 	reg.C = 0;
 }
@@ -85,6 +117,51 @@ void cpu6502::CLI() {
 
 void cpu6502::CLV() {
 	reg.V = 0;
+}
+
+void cpu6502::CMP() {
+
+	// C //
+	if (a >= data)
+		reg.C = 1;
+
+	// Z //
+	if (a == data)
+		reg.Z = 1;
+
+	// N //
+	if ((a - data) & (1 << 7))
+		reg.N = 1;
+}
+
+void cpu6502::CPX() {
+
+	// C //
+	if (x >= data)
+		reg.C = 1;
+
+	// Z //
+	if (x == data)
+		reg.Z = 1;
+
+	// N //
+	if ((x - data) & (1 << 7))
+		reg.N = 1;
+}
+
+void cpu6502::CPY() {
+
+	// C //
+	if (y >= data)
+		reg.C = 1;
+
+	// Z //
+	if (y == data)
+		reg.Z = 1;
+
+	// N //
+	if ((y - data) & (1 << 7))
+		reg.N = 1;
 }
 
 void cpu6502::DEX() {
@@ -121,6 +198,24 @@ void cpu6502::DEY() {
 		reg.N = 0;
 }
 
+void cpu6502::EOR() {
+
+	a = (a ^ data);
+
+	// Z //
+	if (a & 0xFF)
+		reg.Z = 0;
+	else
+		reg.Z = 1;
+
+	// N //
+	if (a & (1 << 7))
+		reg.N = 1;
+	else
+		reg.N = 0;
+
+}
+
 void cpu6502::INX() {
 
 	x++;
@@ -155,6 +250,11 @@ void cpu6502::INY() {
 	else
 		reg.N = 0;
 
+}
+
+void cpu6502::JMP() {
+
+	pc = addr;
 }
 
 void cpu6502::LDA() {
@@ -203,6 +303,27 @@ void cpu6502::LDY() {
 
 	// N //
 	if (y & (1 << 7))
+		reg.N = 1;
+	else
+		reg.N = 0;
+}
+
+void cpu6502::NOP() {
+	// no changes aside from incrementing PC by virtue of calling the instruction //
+}
+
+void cpu6502::ORA() {
+
+	a = a | data;
+
+	// Z //
+	if (a & 0xFF)
+		reg.Z = 0;
+	else
+		reg.Z = 1;
+
+	// N //
+	if (a & (1 << 7))
 		reg.N = 1;
 	else
 		reg.N = 0;
