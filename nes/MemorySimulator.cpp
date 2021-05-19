@@ -8,24 +8,23 @@ MemorySimulator::MemorySimulator() {
 
 	uint8_t* tmp = static_cast<uint8_t*>(lp);
 	uint8_t* datatoset = tmp;
+	uint8_t* orig = tmp;
 	
-	*tmp = 0xA2;
+	*tmp = 0xA0;
 	tmp++;
-	*tmp = 0xFF;
+	*tmp = 0x01;
 	tmp++;
-	*tmp = 0xB5;
+	*tmp = 0xB1;
 	tmp++;
-	*tmp = 0x80;
-	tmp++;
+	*tmp = 0x06;
 
-	//*tmp = 0x4C;
-	//tmp++;
-	//*tmp = 0x02;
-	//tmp++;
-	//*tmp = 0xCD;
-
-	datatoset += 0x007F;
-	*datatoset = 0xCC;
+	datatoset += 0x06;
+	*datatoset = 0x02;
+	datatoset++;
+	*datatoset = 0x04;
+	datatoset = orig;
+	datatoset += 0x0403;
+	*datatoset = 0x0e;
 	
 	//uint8_t* tmp = mem;	
 	

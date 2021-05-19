@@ -62,12 +62,47 @@ void cpu6502::ABS() {
 	addr = input;
 	data = m->read(addr);		// todo: different ranges must go to different devices //
 }
+
+void cpu6502::ABX() {
+	addr = input + x;			// todo: oops cycle //
+	data = m->read(addr);		// todo: different ranges must go to different devices //
+}
+
+void cpu6502::ABY() {
+	addr = input + y;			// todo: oops cycle //
+	data = m->read(addr);		// todo: different ranges must go to different devices //
+}
+
+void cpu6502::IDX() {
+	uint8_t tmp = m->read(((input + x) % 256));
+	addr = m->read(((input + x + 1) % 256));
+	addr = addr << 8;
+	addr |= tmp;
+	data = m->read(addr);
+}
+
+void cpu6502::IDY() {
+	uint8_t tmp = m->read(input);
+	addr = m->read((input + 1) % 256);
+	addr = addr << 8;
+	addr |= tmp;
+	addr = addr + y;
+	data = m->read(addr);
+}
+
 void cpu6502::IMM() {
 	data = input;
 }
 
 void cpu6502::IMP() {
 	
+}
+
+void cpu6502::IND() {
+	uint8_t tmp = m->read(input);
+	addr = m->read(input + 1);
+	addr = addr << 8;
+	addr |= tmp;
 }
 
 void cpu6502::ZPG() {
