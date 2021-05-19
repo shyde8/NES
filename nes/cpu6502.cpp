@@ -364,6 +364,38 @@ void cpu6502::ORA() {
 		reg.N = 0;
 }
 
+void cpu6502::PHA() {	
+	*(reinterpret_cast<uint8_t*>(0x10100 | sp)) = a;		// todo: should be 0x0100 | sp
+	sp--;
+}
+
+void cpu6502::PHP() {
+	*(reinterpret_cast<uint8_t*>(0x10100 | sp)) = reg.pReg;		// todo: should be 0x0100 | sp
+	sp--;
+}
+
+void cpu6502::PLA() {
+	sp++;
+	a = *(reinterpret_cast<uint8_t*>(0x10100 | sp));		// todo: should be 0x0100 | sp	
+
+	// Z //
+	if (a & 0xFF)
+		reg.Z = 0;
+	else
+		reg.Z = 1;
+
+	// N //
+	if (a & (1 << 7))
+		reg.N = 1;
+	else
+		reg.N = 0;
+}
+
+void cpu6502::PLP() {
+	sp++;
+	reg.pReg = *(reinterpret_cast<uint8_t*>(0x10100 | sp));		// todo: should be 0x0100 | sp	
+}
+
 void cpu6502::SEC() {
 	reg.C = 1;
 }
@@ -410,6 +442,10 @@ void cpu6502::TAY() {
 		reg.N = 0;
 }
 
+void cpu6502::TSX() {
+	x = sp;
+}
+
 void cpu6502::TXA() {
 
 	a = x;
@@ -425,6 +461,10 @@ void cpu6502::TXA() {
 		reg.N = 1;
 	else
 		reg.N = 0;
+}
+
+void cpu6502::TXS() {
+	sp = x;
 }
 
 void cpu6502::TYA() {

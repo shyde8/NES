@@ -45,7 +45,7 @@ private:
 	uint8_t a = 0x00;		// accumulator //
 	uint8_t x = 0x00;		// x register //
 	uint8_t y = 0x00;		// y register //
-	uint8_t sp = 0x00;		// stack pointer //
+	uint8_t sp = 0xFF;		// stack pointer //
 	uint16_t pc = 0x0000;	// program counter //
 
 	union p {				// status register //
@@ -95,12 +95,18 @@ private:
 	void LDY();
 	void NOP();
 	void ORA();
+	void PHA();
+	void PHP();
+	void PLA();
+	void PLP();
 	void SEC();
 	void SED();
 	void SEI();
 	void TAX();
 	void TAY();
+	void TSX();
 	void TXA();
+	void TXS();
 	void TYA();	
 
 	// CURR INST STATE //
@@ -122,6 +128,7 @@ private:
 	{
 		{0x01, Instruction(2, 6, &cpu6502::ORA, &cpu6502::IDX)},
 		{0x05, Instruction(2, 3, &cpu6502::ORA, &cpu6502::ZPG)},
+		{0x08, Instruction(1, 3, &cpu6502::PHP, &cpu6502::IMP)},
 		{0x09, Instruction(2, 2, &cpu6502::ORA, &cpu6502::IMM)},
 		{0x0D, Instruction(3, 4, &cpu6502::ORA, &cpu6502::ABS)},
 		{0x11, Instruction(2, 5, &cpu6502::ORA, &cpu6502::IDY)},
@@ -131,6 +138,7 @@ private:
 		{0x1D, Instruction(3, 4, &cpu6502::ORA, &cpu6502::ABX)},
 		{0x21, Instruction(2, 6, &cpu6502::AND, &cpu6502::IDX)},
 		{0x25, Instruction(2, 3, &cpu6502::AND, &cpu6502::ZPG)},
+		{0x28, Instruction(1, 4, &cpu6502::PLP, &cpu6502::IMP)},
 		{0x2D, Instruction(3, 4, &cpu6502::AND, &cpu6502::ABS)},
 		{0x29, Instruction(2, 2, &cpu6502::AND, &cpu6502::IMM)},
 		{0x31, Instruction(2, 5, &cpu6502::AND, &cpu6502::IDY)},
@@ -140,6 +148,7 @@ private:
 		{0x3D, Instruction(3, 4, &cpu6502::AND, &cpu6502::ABX)},
 		{0x41, Instruction(2, 6, &cpu6502::EOR, &cpu6502::IDX)},
 		{0x45, Instruction(2, 3, &cpu6502::EOR, &cpu6502::ZPG)},
+		{0x48, Instruction(1, 3, &cpu6502::PHA, &cpu6502::IMP)},
 		{0x49, Instruction(2, 2, &cpu6502::EOR, &cpu6502::IMM)},
 		{0x4C, Instruction(3, 3, &cpu6502::JMP, &cpu6502::ABS)},
 		{0x4D, Instruction(3, 4, &cpu6502::EOR, &cpu6502::ABS)},
@@ -148,11 +157,13 @@ private:
 		{0x58, Instruction(1, 2, &cpu6502::CLI, &cpu6502::IMP)},
 		{0x59, Instruction(3, 4, &cpu6502::EOR, &cpu6502::ABY)},
 		{0x5D, Instruction(3, 4, &cpu6502::EOR, &cpu6502::ABX)},
+		{0x68, Instruction(1, 4, &cpu6502::PLA, &cpu6502::IMP)},
 		{0x6C, Instruction(3, 5, &cpu6502::JMP, &cpu6502::IND)},
 		{0x78, Instruction(1, 2, &cpu6502::SEI, &cpu6502::IMP)},
 		{0x88, Instruction(1, 2, &cpu6502::DEY, &cpu6502::IMP)},
 		{0x8A, Instruction(1, 2, &cpu6502::TXA, &cpu6502::IMP)},
 		{0x98, Instruction(1, 2, &cpu6502::TYA, &cpu6502::IMP)},
+		{0x9A, Instruction(1, 2, &cpu6502::TXS, &cpu6502::IMP)},
 		{0xA0, Instruction(2, 2, &cpu6502::LDY, &cpu6502::IMM)},
 		{0xA1, Instruction(2, 6, &cpu6502::LDA, &cpu6502::IDX)},
 		{0xA2, Instruction(2, 2, &cpu6502::LDX, &cpu6502::IMM)},
@@ -171,6 +182,7 @@ private:
 		{0xB6, Instruction(2, 4, &cpu6502::LDX, &cpu6502::ZPY)},
 		{0xB8, Instruction(1, 2, &cpu6502::CLV, &cpu6502::IMP)},
 		{0xB9, Instruction(3, 4, &cpu6502::LDA, &cpu6502::ABY)},
+		{0xBA, Instruction(1, 2, &cpu6502::TSX, &cpu6502::IMP)},
 		{0xBC, Instruction(3, 4, &cpu6502::LDY, &cpu6502::ABX)},
 		{0xBD, Instruction(3, 4, &cpu6502::LDA, &cpu6502::ABX)},
 		{0xBE, Instruction(3, 4, &cpu6502::LDX, &cpu6502::ABY)},
