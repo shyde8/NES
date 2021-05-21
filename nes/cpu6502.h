@@ -76,6 +76,7 @@ private:
 	void ZPY();
 
 	// OPCODES //
+	void ADC();
 	void AND();
 	void CLC();
 	void CLD();
@@ -90,6 +91,7 @@ private:
 	void INX();
 	void INY();
 	void JMP();
+	void JSR();
 	void LDA();
 	void LDX();
 	void LDY();
@@ -99,6 +101,8 @@ private:
 	void PHP();
 	void PLA();
 	void PLP();
+	void RTS();
+	void SBC();
 	void SEC();
 	void SED();
 	void SEI();
@@ -136,6 +140,7 @@ private:
 		{0x18, Instruction(1, 2, &cpu6502::CLC, &cpu6502::IMP)},
 		{0x19, Instruction(3, 4, &cpu6502::ORA, &cpu6502::ABY)},
 		{0x1D, Instruction(3, 4, &cpu6502::ORA, &cpu6502::ABX)},
+		{0x20, Instruction(3, 6, &cpu6502::JSR, &cpu6502::ABS)},
 		{0x21, Instruction(2, 6, &cpu6502::AND, &cpu6502::IDX)},
 		{0x25, Instruction(2, 3, &cpu6502::AND, &cpu6502::ZPG)},
 		{0x28, Instruction(1, 4, &cpu6502::PLP, &cpu6502::IMP)},
@@ -157,9 +162,18 @@ private:
 		{0x58, Instruction(1, 2, &cpu6502::CLI, &cpu6502::IMP)},
 		{0x59, Instruction(3, 4, &cpu6502::EOR, &cpu6502::ABY)},
 		{0x5D, Instruction(3, 4, &cpu6502::EOR, &cpu6502::ABX)},
+		{0x60, Instruction(1, 6, &cpu6502::RTS, &cpu6502::IMP)},
+		{0x61, Instruction(2, 6, &cpu6502::ADC, &cpu6502::IDX)},
+		{0x65, Instruction(2, 3, &cpu6502::ADC, &cpu6502::ZPG)},
 		{0x68, Instruction(1, 4, &cpu6502::PLA, &cpu6502::IMP)},
+		{0x69, Instruction(2, 2, &cpu6502::ADC, &cpu6502::IMM)},
 		{0x6C, Instruction(3, 5, &cpu6502::JMP, &cpu6502::IND)},
+		{0x6D, Instruction(3, 4, &cpu6502::ADC, &cpu6502::ABS)},
+		{0x71, Instruction(2, 5, &cpu6502::ADC, &cpu6502::IDY)},
+		{0x75, Instruction(2, 4, &cpu6502::ADC, &cpu6502::ZPX)},
 		{0x78, Instruction(1, 2, &cpu6502::SEI, &cpu6502::IMP)},
+		{0x79, Instruction(3, 4, &cpu6502::ADC, &cpu6502::ABY)},
+		{0x7D, Instruction(3, 4, &cpu6502::ABX, &cpu6502::ABX)},
 		{0x88, Instruction(1, 2, &cpu6502::DEY, &cpu6502::IMP)},
 		{0x8A, Instruction(1, 2, &cpu6502::TXA, &cpu6502::IMP)},
 		{0x98, Instruction(1, 2, &cpu6502::TYA, &cpu6502::IMP)},
@@ -201,10 +215,18 @@ private:
 		{0xD9, Instruction(3, 4, &cpu6502::CMP, &cpu6502::ABY)},
 		{0xDD, Instruction(3, 4, &cpu6502::CMP, &cpu6502::ABX)},
 		{0xE0, Instruction(2, 2, &cpu6502::CPX, &cpu6502::IMM)},
+		{0xE1, Instruction(2, 6, &cpu6502::SBC, &cpu6502::IDX)},
 		{0xE4, Instruction(2, 3, &cpu6502::CPX, &cpu6502::ZPG)},
+		{0xE5, Instruction(2, 3, &cpu6502::SBC, &cpu6502::ZPG)},
 		{0xE8, Instruction(1, 2, &cpu6502::INX, &cpu6502::IMP)},
+		{0xE9, Instruction(2, 2, &cpu6502::SBC, &cpu6502::IMM)},
 		{0xEA, Instruction(1, 2, &cpu6502::NOP, &cpu6502::IMP)},
 		{0xEC, Instruction(3, 4, &cpu6502::CPX, &cpu6502::ABS)},
-		{0xF8, Instruction(1, 2, &cpu6502::SED, &cpu6502::IMP)}
+		{0xED, Instruction(3, 4, &cpu6502::SBC, &cpu6502::ABS)},
+		{0xF1, Instruction(2, 5, &cpu6502::SBC, &cpu6502::IDY)},
+		{0xF5, Instruction(2, 4, &cpu6502::SBC, &cpu6502::ZPX)},
+		{0xF8, Instruction(1, 2, &cpu6502::SED, &cpu6502::IMP)},
+		{0xF9, Instruction(3, 4, &cpu6502::SBC, &cpu6502::ABY)},
+		{0xFD, Instruction(3, 4, &cpu6502::SBC, &cpu6502::ABX)},
 	};
 };

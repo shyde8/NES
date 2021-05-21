@@ -21,16 +21,23 @@ uint8_t cpu6502::readPC() {
 	
 	input = 0x0000;
 	for (int i = 0; i < length - 1; i++) {
-		input = input << 8;
-		input |= m->read(pc);
+		
+		// todo: make this not disgusting //
+
+		if (i == 0) {
+			input |= m->read(pc);
+		}
+		else {
+			input |= (m->read(pc) << 8);
+		}
+
 		pc++;
 	}
-	std::cout << "0x" << std::setfill('0') << std::setw(2) << std::right << std::hex << (int)input << std::endl;
+	std::cout << "0x" << std::setfill('0') << std::setw(4) << std::right << std::hex << (int)input << std::endl;
 
 	// EXECUTE //
 	exec_addr();
 	exec_opcode();
-
 
 	return 0;
 }
@@ -121,6 +128,39 @@ void cpu6502::ZPY() {
 }
 
 // OPCODES //
+void cpu6502::ADC() {
+	
+	//todo: add cycle if page boundary crossed
+
+	uint8_t pre = a;
+	a = a + data + reg.C;
+
+	// C //
+	if ((pre + data + reg.C) > 0xFF)
+		reg.C = 1;
+	else
+		reg.C = 0;
+
+	// Z //
+	if (a & 0xFF)
+		reg.Z = 0;
+	else
+		reg.Z = 1;
+
+	// V //
+	// algorithm courtesy of Disch, http://forums.nesdev.com/viewtopic.php?f=3&t=6331 //
+	if ((pre ^ a) & (data ^ a) & 0x80)
+		reg.V = 1;
+	else
+		reg.V = 0;
+
+	// N //
+	if (a & (1 << 7))
+		reg.N = 1;
+	else
+		reg.N = 0;
+}
+
 void cpu6502::AND() {
 
 	a = a & data;
@@ -292,6 +332,17 @@ void cpu6502::JMP() {
 	pc = addr;
 }
 
+void cpu6502::JSR() {
+
+	uint16_t tmp = pc - 1;
+	*(reinterpret_cast<uint8_t*>(0x10100 | sp)) = (tmp & 0xFF00) >> 8;		// todo: should be 0x0100 | sp
+	sp--;
+	*(reinterpret_cast<uint8_t*>(0x10100 | sp)) = (tmp & 0x00FF);			// todo: should be 0x0100 | sp
+	sp--;
+
+	pc = addr;
+}
+
 void cpu6502::LDA() {
 	
 	a = data;
@@ -394,6 +445,26 @@ void cpu6502::PLA() {
 void cpu6502::PLP() {
 	sp++;
 	reg.pReg = *(reinterpret_cast<uint8_t*>(0x10100 | sp));		// todo: should be 0x0100 | sp	
+}
+
+void cpu6502::RTS() {
+	uint16_t jmpAddr = 0x0000;
+	sp++;
+	jmpAddr = *(reinterpret_cast<uint8_t*>(0x10100 | sp));		// todo: should be 0x0100 | sp
+	sp++;
+	jmpAddr |= *(reinterpret_cast<uint8_t*>(0x10100 | sp)) << 8;
+
+	jmpAddr++;
+	pc = jmpAddr;
+}
+
+void cpu6502::SBC() {
+
+	//todo: add cycle if page boundary crossed
+
+	// flip the data bits and call ADC, http://forums.nesdev.com/viewtopic.php?t=8703 //
+	data = data ^ 0xFF;
+	ADC();
 }
 
 void cpu6502::SEC() {
