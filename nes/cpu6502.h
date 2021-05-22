@@ -71,6 +71,7 @@ private:
 	void IMM();
 	void IMP();
 	void IND();
+	void REL();
 	void ZPG();
 	void ZPX();
 	void ZPY();
@@ -78,6 +79,14 @@ private:
 	// OPCODES //
 	void ADC();
 	void AND();
+	void BCC();
+	void BCS();
+	void BEQ();
+	void BMI();
+	void BNE();
+	void BPL();
+	void BVC();
+	void BVS();
 	void CLC();
 	void CLD();
 	void CLI();
@@ -135,6 +144,7 @@ private:
 		{0x08, Instruction(1, 3, &cpu6502::PHP, &cpu6502::IMP)},
 		{0x09, Instruction(2, 2, &cpu6502::ORA, &cpu6502::IMM)},
 		{0x0D, Instruction(3, 4, &cpu6502::ORA, &cpu6502::ABS)},
+		{0x10, Instruction(2, 2, &cpu6502::BPL, &cpu6502::REL)},
 		{0x11, Instruction(2, 5, &cpu6502::ORA, &cpu6502::IDY)},
 		{0x15, Instruction(2, 4, &cpu6502::ORA, &cpu6502::ZPX)},
 		{0x18, Instruction(1, 2, &cpu6502::CLC, &cpu6502::IMP)},
@@ -146,6 +156,7 @@ private:
 		{0x28, Instruction(1, 4, &cpu6502::PLP, &cpu6502::IMP)},
 		{0x2D, Instruction(3, 4, &cpu6502::AND, &cpu6502::ABS)},
 		{0x29, Instruction(2, 2, &cpu6502::AND, &cpu6502::IMM)},
+		{0x30, Instruction(2, 2, &cpu6502::BMI, &cpu6502::REL)},
 		{0x31, Instruction(2, 5, &cpu6502::AND, &cpu6502::IDY)},
 		{0x35, Instruction(2, 4, &cpu6502::AND, &cpu6502::ZPX)},
 		{0x38, Instruction(1, 2, &cpu6502::SEC, &cpu6502::IMP)},
@@ -157,6 +168,7 @@ private:
 		{0x49, Instruction(2, 2, &cpu6502::EOR, &cpu6502::IMM)},
 		{0x4C, Instruction(3, 3, &cpu6502::JMP, &cpu6502::ABS)},
 		{0x4D, Instruction(3, 4, &cpu6502::EOR, &cpu6502::ABS)},
+		{0x50, Instruction(2, 2, &cpu6502::BVC, &cpu6502::REL)},
 		{0x51, Instruction(2, 5, &cpu6502::EOR, &cpu6502::IDY)},
 		{0x55, Instruction(2, 4, &cpu6502::EOR, &cpu6502::ZPX)},
 		{0x58, Instruction(1, 2, &cpu6502::CLI, &cpu6502::IMP)},
@@ -169,6 +181,7 @@ private:
 		{0x69, Instruction(2, 2, &cpu6502::ADC, &cpu6502::IMM)},
 		{0x6C, Instruction(3, 5, &cpu6502::JMP, &cpu6502::IND)},
 		{0x6D, Instruction(3, 4, &cpu6502::ADC, &cpu6502::ABS)},
+		{0x70, Instruction(2, 2, &cpu6502::BVS, &cpu6502::REL)},
 		{0x71, Instruction(2, 5, &cpu6502::ADC, &cpu6502::IDY)},
 		{0x75, Instruction(2, 4, &cpu6502::ADC, &cpu6502::ZPX)},
 		{0x78, Instruction(1, 2, &cpu6502::SEI, &cpu6502::IMP)},
@@ -176,6 +189,7 @@ private:
 		{0x7D, Instruction(3, 4, &cpu6502::ABX, &cpu6502::ABX)},
 		{0x88, Instruction(1, 2, &cpu6502::DEY, &cpu6502::IMP)},
 		{0x8A, Instruction(1, 2, &cpu6502::TXA, &cpu6502::IMP)},
+		{0x90, Instruction(2, 2, &cpu6502::BCC, &cpu6502::REL)},
 		{0x98, Instruction(1, 2, &cpu6502::TYA, &cpu6502::IMP)},
 		{0x9A, Instruction(1, 2, &cpu6502::TXS, &cpu6502::IMP)},
 		{0xA0, Instruction(2, 2, &cpu6502::LDY, &cpu6502::IMM)},
@@ -190,6 +204,7 @@ private:
 		{0xAC, Instruction(3, 4, &cpu6502::LDY, &cpu6502::ABS)},
 		{0xAD, Instruction(3, 4, &cpu6502::LDA, &cpu6502::ABS)},
 		{0xAE, Instruction(3, 4, &cpu6502::LDX, &cpu6502::ABS)},
+		{0xB0, Instruction(2, 2, &cpu6502::BCS, &cpu6502::REL)},
 		{0xB1, Instruction(2, 5, &cpu6502::LDA, &cpu6502::IDY)},
 		{0xB4, Instruction(2, 4, &cpu6502::LDY, &cpu6502::ZPX)},
 		{0xB5, Instruction(2, 4, &cpu6502::LDA, &cpu6502::ZPX)},
@@ -209,6 +224,7 @@ private:
 		{0xCA, Instruction(1, 2, &cpu6502::DEX, &cpu6502::IMP)},
 		{0xCC, Instruction(3, 4, &cpu6502::CPY, &cpu6502::ABS)},
 		{0xCD, Instruction(3, 4, &cpu6502::CMP, &cpu6502::ABS)},
+		{0xD0, Instruction(2, 2, &cpu6502::BNE, &cpu6502::REL)},
 		{0xD1, Instruction(2, 5, &cpu6502::CMP, &cpu6502::IDY)},
 		{0xD5, Instruction(2, 4, &cpu6502::CMP, &cpu6502::ZPX)},
 		{0xD8, Instruction(1, 2, &cpu6502::CLD, &cpu6502::IMP)},
@@ -223,6 +239,7 @@ private:
 		{0xEA, Instruction(1, 2, &cpu6502::NOP, &cpu6502::IMP)},
 		{0xEC, Instruction(3, 4, &cpu6502::CPX, &cpu6502::ABS)},
 		{0xED, Instruction(3, 4, &cpu6502::SBC, &cpu6502::ABS)},
+		{0xF0, Instruction(2, 2, &cpu6502::BEQ, &cpu6502::REL)},
 		{0xF1, Instruction(2, 5, &cpu6502::SBC, &cpu6502::IDY)},
 		{0xF5, Instruction(2, 4, &cpu6502::SBC, &cpu6502::ZPX)},
 		{0xF8, Instruction(1, 2, &cpu6502::SED, &cpu6502::IMP)},

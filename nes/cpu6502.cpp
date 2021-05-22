@@ -112,6 +112,10 @@ void cpu6502::IND() {
 	addr |= tmp;
 }
 
+void cpu6502::REL() {
+
+}
+
 void cpu6502::ZPG() {
 	addr = input;
 	data = m->read(addr);		// todo: different ranges must go to different devices //
@@ -176,6 +180,38 @@ void cpu6502::AND() {
 		reg.N = 1;
 	else
 		reg.N = 0;
+}
+
+void cpu6502::BCC() {
+
+}
+
+void cpu6502::BCS() {
+
+}
+
+void cpu6502::BEQ() {
+
+}
+
+void cpu6502::BMI() {
+
+}
+
+void cpu6502::BNE() {
+
+}
+
+void cpu6502::BPL() {
+
+}
+
+void cpu6502::BVC() {
+
+}
+
+void cpu6502::BVS() {
+
 }
 
 void cpu6502::CLC() {
