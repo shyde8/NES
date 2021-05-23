@@ -113,7 +113,10 @@ void cpu6502::IND() {
 }
 
 void cpu6502::REL() {
-
+	uint8_t tmp = input;
+	int8_t offset = (tmp ^ 0x80) - 0x80;
+	//std::cout << "offset="  << static_cast<int16_t>(offset);
+	addr = (pc - 1) + offset;
 }
 
 void cpu6502::ZPG() {
@@ -182,36 +185,116 @@ void cpu6502::AND() {
 		reg.N = 0;
 }
 
-void cpu6502::BCC() {
+void cpu6502::ASL() {
+	if (addrMode == &cpu6502::IMP) {
 
+		// C //
+		if (a & (1 << 7))
+			reg.C = 1;
+		else
+			reg.C = 0;
+
+		a = a << 1;
+
+		// N //
+		if (a & (1 << 7))
+			reg.N = 1;
+		else
+			reg.N = 0;
+	}
+	else {	
+
+		uint8_t* val = reinterpret_cast<uint8_t*>(0x10000 | addr);		// todo: alter as needed
+
+		// C //
+		if (*val & (1 << 7))
+			reg.C = 1;
+		else
+			reg.C = 0;
+
+		*val = *val << 1;
+
+		// N //
+		if (*val & (1 << 7))
+			reg.N = 1;
+		else
+			reg.N = 0;		
+	}
+	
+	// Z //
+	if (a & 0xFF)
+		reg.Z = 0;
+	else
+		reg.Z = 1;
+}
+
+void cpu6502::BCC() {
+	// todo: cycle changes //
+	if (reg.C == 0)
+		pc = addr;
 }
 
 void cpu6502::BCS() {
-
+	// todo: cycle changes //
+	if (reg.C)
+		pc = addr;
 }
 
 void cpu6502::BEQ() {
+	// todo: cycle changes //
+	if (reg.Z)
+		pc = addr;
+}
 
+void cpu6502::BIT() {
+	
+	// Z //
+	if (a & data)
+		reg.Z = 1;
+	else
+		reg.Z = 0;
+
+	// V //
+	if (data & (1 << 6))
+		reg.V = 1;
+	else
+		reg.V = 0;
+
+	// N //
+	if (data & (1 << 7))
+		reg.N = 1;
+	else
+		reg.N = 0;
 }
 
 void cpu6502::BMI() {
-
+	// todo: cycle changes //
+	if (reg.N) 
+		pc = addr;
 }
 
 void cpu6502::BNE() {
-
+	// todo: cycle changes //
+	if (reg.Z == 0)
+		pc = addr;
 }
 
 void cpu6502::BPL() {
-
+	// todo: cycle changes //
+	if (reg.N == 0)
+		pc = addr;
 }
 
 void cpu6502::BVC() {
-
+	// todo: cycle changes //
+	if (reg.V == 0)
+		pc = addr;
 }
 
 void cpu6502::BVS() {
-
+	// todo: cycle changes //
+	if (reg.V)
+		pc = addr;
 }
 
 void cpu6502::CLC() {
@@ -275,6 +358,10 @@ void cpu6502::CPY() {
 		reg.N = 1;
 }
 
+void cpu6502::DEC() {
+	*(reinterpret_cast<uint8_t*>(0x10000 | addr)) = (data - 1);		// todo: alter as needed
+}
+
 void cpu6502::DEX() {
 	
 	x--;
@@ -325,6 +412,10 @@ void cpu6502::EOR() {
 	else
 		reg.N = 0;
 
+}
+
+void cpu6502::INC() {
+	*(reinterpret_cast<uint8_t*>(0x10000 | addr)) = (data + 1);		// todo: alter as needed
 }
 
 void cpu6502::INX() {
@@ -428,6 +519,55 @@ void cpu6502::LDY() {
 		reg.N = 1;
 	else
 		reg.N = 0;
+}
+
+void cpu6502::LSR() {
+	if (addrMode == &cpu6502::IMP) {
+
+		// C //
+		if (a & (1 << 0))
+			reg.C = 1;
+		else
+			reg.C = 0;
+
+		a = a >> 1;
+
+		// Z //
+		if (a & 0xFF)
+			reg.Z = 0;
+		else
+			reg.Z = 1;
+
+		// N //
+		if (a & (1 << 7))
+			reg.N = 1;
+		else
+			reg.N = 0;
+	}
+	else {
+		uint8_t* val = reinterpret_cast<uint8_t*>(0x10000 | addr);		// todo: alter as needed
+
+		// C //
+		if (*val & (1 << 0))
+			reg.C = 1;
+		else
+			reg.C = 0;
+
+		*val = *val >> 1;
+
+		// Z //
+		if (*val & 0xFF)
+			reg.Z = 0;
+		else
+			reg.Z = 1;
+
+		// N //
+		if (*val & (1 << 7))
+			reg.N = 1;
+		else
+			reg.N = 0;
+
+	}
 }
 
 void cpu6502::NOP() {

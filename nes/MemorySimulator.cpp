@@ -10,55 +10,23 @@ MemorySimulator::MemorySimulator() {
 	uint8_t* datatoset = tmp;
 	uint8_t* orig = tmp;
 
-	//*tmp = 0x38;
-	//tmp++;
 	*tmp = 0xA9;
 	tmp++;
-	*tmp = 0x08;
+	*tmp = 0x6D;	
 	tmp++;
-	*tmp = 0xE9;
-	tmp++;
-	*tmp = 0x01;
-	tmp++;
-	*tmp = 0xE9;
-	tmp++;
-	*tmp = 0x01;
-	tmp++;
-	*tmp = 0xE9;
-	tmp++;
-	*tmp = 0x01;
-	tmp++;
-	*tmp = 0xE9;
-	tmp++;
-	*tmp = 0x01;
-	tmp++;
-	*tmp = 0xE9;
-	tmp++;
-	*tmp = 0x01;
-	tmp++;
-	*tmp = 0xE9;
-	tmp++;
-	*tmp = 0x01;
-	tmp++;
-	*tmp = 0xE9;
-	tmp++;
-	*tmp = 0x01;
-	tmp++;
-	*tmp = 0xE9;
-	tmp++;
-	*tmp = 0x01;
+	*tmp = 0x4A;
 	tmp++;
 
-
-	//*tmp = 0x18;
+	//*tmp = 0x2C;
 	//tmp++;
-	//*tmp = 0xD8;
+	//*tmp = 0xFF;
+	//tmp++;
+	//*tmp = 0x02;
 	//tmp++;
 
-	//*tmp = 0x28;
 	
 	//datatoset += 0x02ff;
-	//*datatoset = 0xA9;
+	//*datatoset = 0x6D;
 	//datatoset++;
 	//*datatoset = 0xDD;
 	//datatoset++;
