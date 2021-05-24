@@ -12,17 +12,14 @@ MemorySimulator::MemorySimulator() {
 
 	*tmp = 0xA9;
 	tmp++;
-	*tmp = 0x6D;	
+	*tmp = 0x6d;	
 	tmp++;
-	*tmp = 0x4A;
+	*tmp = 0x8D;
 	tmp++;
-
-	//*tmp = 0x2C;
-	//tmp++;
-	//*tmp = 0xFF;
-	//tmp++;
-	//*tmp = 0x02;
-	//tmp++;
+	*tmp = 0xFF;
+	tmp++;
+	*tmp = 0x02;
+	tmp++;
 
 	
 	//datatoset += 0x02ff;

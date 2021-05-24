@@ -623,6 +623,105 @@ void cpu6502::PLP() {
 	reg.pReg = *(reinterpret_cast<uint8_t*>(0x10100 | sp));		// todo: should be 0x0100 | sp	
 }
 
+void cpu6502::ROL() {
+	
+	unsigned int tmp = reg.C;
+	if (addrMode == &cpu6502::IMP) {		
+		
+		// C //
+		if (a & (1 << 7))
+			reg.C = 1;
+		else
+			reg.C = 0;
+
+		a = a << 1;
+		if (tmp)
+			a = a | 0x01;
+
+		// N //
+		if (a & (1 << 7))
+			reg.N = 1;
+		else
+			reg.N = 0;
+	}
+	else {
+
+		uint8_t* val = reinterpret_cast<uint8_t*>(0x10000 | addr);		// todo: alter as needed
+
+		// C //
+		if (*val & (1 << 7))
+			reg.C = 1;
+		else
+			reg.C = 0;
+
+		*val = *val << 1;
+		if (tmp)
+			*val = *val | 0x01;
+
+		// N //
+		if (*val & (1 << 7))
+			reg.N = 1;
+		else
+			reg.N = 0;
+	}
+
+	// Z //
+	if (a & 0xFF)
+		reg.Z = 0;
+	else
+		reg.Z = 1;
+}
+
+void cpu6502::ROR() {
+
+	unsigned int tmp = reg.C;
+	if (addrMode == &cpu6502::IMP) {
+
+		// C //
+		if (a & (1 << 0))
+			reg.C = 1;
+		else
+			reg.C = 0;
+
+		a = a >> 1;
+		if (tmp)
+			a = a | 0x80;
+
+		// N //
+		if (a & (1 << 7))
+			reg.N = 1;
+		else
+			reg.N = 0;
+	}
+	else {
+		uint8_t* val = reinterpret_cast<uint8_t*>(0x10000 | addr);		// todo: alter as needed
+
+		// C //
+		if (*val & (1 << 0))
+			reg.C = 1;
+		else
+			reg.C = 0;
+
+		*val = *val >> 1;
+		if (tmp)
+			*val = *val | 0x80;
+
+		// N //
+		if (*val & (1 << 7))
+			reg.N = 1;
+		else
+			reg.N = 0;
+
+	}
+
+	// Z //
+	if (a & 0xFF)
+		reg.Z = 0;
+	else
+		reg.Z = 1;
+
+}
+
 void cpu6502::RTS() {
 	uint16_t jmpAddr = 0x0000;
 	sp++;
@@ -653,6 +752,18 @@ void cpu6502::SED() {
 
 void cpu6502::SEI() {
 	reg.I = 1;
+}
+
+void cpu6502::STA() {
+	*(reinterpret_cast<uint8_t*>(0x10000 | addr)) = a;
+}
+
+void cpu6502::STX() {
+	*(reinterpret_cast<uint8_t*>(0x10000 | addr)) = x;
+}
+
+void cpu6502::STY() {
+	*(reinterpret_cast<uint8_t*>(0x10000 | addr)) = y;
 }
 
 void cpu6502::TAX() {
