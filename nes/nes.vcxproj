@@ -144,6 +144,7 @@
     <ClCompile Include="MemorySimulator.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Bus.h" />
     <ClInclude Include="cpu6502.h" />
     <ClInclude Include="MemorySimulator.h" />
   </ItemGroup>

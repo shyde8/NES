@@ -2,18 +2,27 @@
 
 // CONSTRUCTOR //
 cpu6502::cpu6502() {
-	
+	this->log.open("D:\\log.txt", std::ios::out);
+	this->reg.pReg = 0x24;
 }
 
 uint8_t cpu6502::readPC() {
 	
+	std::cout << std::setfill('0') << std::setw(4) << std::right << std::hex << (int)pc << std::endl;
+	this->log << std::setfill('0') << std::setw(4) << std::right << std::hex << (int)pc;
+	this->log << "                                            " << "A:" << std::setfill('0') << std::setw(2) << std::right << std::hex << (int)a << " X:" << (int)x << " Y:" << (int)y << " P:" << (int)reg.pReg << std::endl;
+
 	// FETCH //
 	uint8_t inst = m->read(pc);
-	std::cout << "0x" << std::setfill('0') << std::setw(2) << std::right << std::hex << (int)inst << std::endl;
+	//std::cout << "0x" << std::setfill('0') << std::setw(2) << std::right << std::hex << (int)inst << std::endl;
 	pc++;
 
 	// DECODE //
 	it = opcodeMatrix.find(inst);
+
+	if (it == opcodeMatrix.end())
+		return 0;
+
 	cycles = it->second.cycles;
 	length = it->second.length;
 	opcode = it->second.opcode;
@@ -33,7 +42,7 @@ uint8_t cpu6502::readPC() {
 
 		pc++;
 	}
-	std::cout << "0x" << std::setfill('0') << std::setw(4) << std::right << std::hex << (int)input << std::endl;
+	//std::cout << "0x" << std::setfill('0') << std::setw(4) << std::right << std::hex << (int)input << std::endl;
 
 	// EXECUTE //
 	exec_addr();
@@ -62,6 +71,15 @@ void cpu6502::exec_addr() {
 
 void cpu6502::exec_opcode() {
 	return (this->*opcode)();
+}
+
+uint8_t cpu6502::read(uint16_t addr) {
+
+	return 0;
+}
+
+void cpu6502::write(uint8_t data, uint16_t addr) {
+	m->write(data, addr);
 }
 
 // ADDRESSING MODES //
@@ -116,7 +134,8 @@ void cpu6502::REL() {
 	uint8_t tmp = input;
 	int8_t offset = (tmp ^ 0x80) - 0x80;
 	//std::cout << "offset="  << static_cast<int16_t>(offset);
-	addr = (pc - 1) + offset;
+	//addr = (pc - 1) + offset;
+	addr = pc + offset;
 }
 
 void cpu6502::ZPG() {
@@ -204,21 +223,24 @@ void cpu6502::ASL() {
 	}
 	else {	
 
-		uint8_t* val = reinterpret_cast<uint8_t*>(0x10000 | addr);		// todo: alter as needed
+		//uint8_t* val = reinterpret_cast<uint8_t*>(0x10000 | addr);		// todo: alter as needed
+		uint8_t val = data;
 
 		// C //
-		if (*val & (1 << 7))
+		if (val & (1 << 7))
 			reg.C = 1;
 		else
 			reg.C = 0;
 
-		*val = *val << 1;
+		val = val << 1;
 
 		// N //
-		if (*val & (1 << 7))
+		if (val & (1 << 7))
 			reg.N = 1;
 		else
-			reg.N = 0;		
+			reg.N = 0;
+
+		m->write(val, addr);
 	}
 	
 	// Z //
@@ -250,9 +272,9 @@ void cpu6502::BIT() {
 	
 	// Z //
 	if (a & data)
-		reg.Z = 1;
-	else
 		reg.Z = 0;
+	else
+		reg.Z = 1;
 
 	// V //
 	if (data & (1 << 6))
@@ -283,6 +305,10 @@ void cpu6502::BPL() {
 	// todo: cycle changes //
 	if (reg.N == 0)
 		pc = addr;
+}
+
+void cpu6502::BRK() {
+
 }
 
 void cpu6502::BVC() {
@@ -318,14 +344,20 @@ void cpu6502::CMP() {
 	// C //
 	if (a >= data)
 		reg.C = 1;
+	else
+		reg.C = 0;
 
 	// Z //
 	if (a == data)
 		reg.Z = 1;
+	else
+		reg.Z = 0;
 
 	// N //
 	if ((a - data) & (1 << 7))
 		reg.N = 1;
+	else
+		reg.N = 0;
 }
 
 void cpu6502::CPX() {
@@ -333,14 +365,20 @@ void cpu6502::CPX() {
 	// C //
 	if (x >= data)
 		reg.C = 1;
+	else
+		reg.C = 0;
 
 	// Z //
 	if (x == data)
 		reg.Z = 1;
+	else
+		reg.Z = 0;
 
 	// N //
 	if ((x - data) & (1 << 7))
 		reg.N = 1;
+	else
+		reg.N = 0;
 }
 
 void cpu6502::CPY() {
@@ -348,18 +386,25 @@ void cpu6502::CPY() {
 	// C //
 	if (y >= data)
 		reg.C = 1;
+	else
+		reg.C = 0;
 
 	// Z //
 	if (y == data)
 		reg.Z = 1;
+	else
+		reg.Z = 0;
 
 	// N //
 	if ((y - data) & (1 << 7))
 		reg.N = 1;
+	else
+		reg.N = 0;
 }
 
 void cpu6502::DEC() {
-	*(reinterpret_cast<uint8_t*>(0x10000 | addr)) = (data - 1);		// todo: alter as needed
+	//*(reinterpret_cast<uint8_t*>(0x10000 | addr)) = (data - 1);		// todo: alter as needed
+	m->write(data - 1, addr);
 }
 
 void cpu6502::DEX() {
@@ -415,7 +460,8 @@ void cpu6502::EOR() {
 }
 
 void cpu6502::INC() {
-	*(reinterpret_cast<uint8_t*>(0x10000 | addr)) = (data + 1);		// todo: alter as needed
+	//*(reinterpret_cast<uint8_t*>(0x10000 | addr)) = (data + 1);		// todo: alter as needed
+	m->write(data + 1, addr);
 }
 
 void cpu6502::INX() {
@@ -455,16 +501,17 @@ void cpu6502::INY() {
 }
 
 void cpu6502::JMP() {
-
 	pc = addr;
 }
 
 void cpu6502::JSR() {
 
 	uint16_t tmp = pc - 1;
-	*(reinterpret_cast<uint8_t*>(0x10100 | sp)) = (tmp & 0xFF00) >> 8;		// todo: should be 0x0100 | sp
+	//*(reinterpret_cast<uint8_t*>(0x10100 | sp)) = (tmp & 0xFF00) >> 8;		// todo: should be 0x0100 | sp
+	m->write(((tmp & 0xFF00) >> 8), (0x0100 | sp));
 	sp--;
-	*(reinterpret_cast<uint8_t*>(0x10100 | sp)) = (tmp & 0x00FF);			// todo: should be 0x0100 | sp
+	//*(reinterpret_cast<uint8_t*>(0x10100 | sp)) = (tmp & 0x00FF);			// todo: should be 0x0100 | sp
+	m->write(((tmp & 0x00FF)), (0x0100 | sp));
 	sp--;
 
 	pc = addr;
@@ -545,28 +592,30 @@ void cpu6502::LSR() {
 			reg.N = 0;
 	}
 	else {
-		uint8_t* val = reinterpret_cast<uint8_t*>(0x10000 | addr);		// todo: alter as needed
+		//uint8_t* val = reinterpret_cast<uint8_t*>(0x10000 | addr);		// todo: alter as needed
+		uint8_t val = data;
 
 		// C //
-		if (*val & (1 << 0))
+		if (val & (1 << 0))
 			reg.C = 1;
 		else
 			reg.C = 0;
 
-		*val = *val >> 1;
+		val = val >> 1;
 
 		// Z //
-		if (*val & 0xFF)
+		if (val & 0xFF)
 			reg.Z = 0;
 		else
 			reg.Z = 1;
 
 		// N //
-		if (*val & (1 << 7))
+		if (val & (1 << 7))
 			reg.N = 1;
 		else
 			reg.N = 0;
 
+		m->write(val, addr);
 	}
 }
 
@@ -592,18 +641,21 @@ void cpu6502::ORA() {
 }
 
 void cpu6502::PHA() {	
-	*(reinterpret_cast<uint8_t*>(0x10100 | sp)) = a;		// todo: should be 0x0100 | sp
+	//*(reinterpret_cast<uint8_t*>(0x10100 | sp)) = a;		// todo: should be 0x0100 | sp
+	m->write(a, (0x0100 | sp));
 	sp--;
 }
 
 void cpu6502::PHP() {
-	*(reinterpret_cast<uint8_t*>(0x10100 | sp)) = reg.pReg;		// todo: should be 0x0100 | sp
+	//*(reinterpret_cast<uint8_t*>(0x10100 | sp)) = reg.pReg;		// todo: should be 0x0100 | sp
+	m->write(reg.pReg, (0x0100 | sp));
 	sp--;
 }
 
 void cpu6502::PLA() {
 	sp++;
-	a = *(reinterpret_cast<uint8_t*>(0x10100 | sp));		// todo: should be 0x0100 | sp	
+	//a = *(reinterpret_cast<uint8_t*>(0x10100 | sp));		// todo: should be 0x0100 | sp
+	a = m->read(0x0100 | sp);
 
 	// Z //
 	if (a & 0xFF)
@@ -620,7 +672,8 @@ void cpu6502::PLA() {
 
 void cpu6502::PLP() {
 	sp++;
-	reg.pReg = *(reinterpret_cast<uint8_t*>(0x10100 | sp));		// todo: should be 0x0100 | sp	
+	//reg.pReg = *(reinterpret_cast<uint8_t*>(0x10100 | sp));		// todo: should be 0x0100 | sp
+	reg.pReg = m->read(0x0100 | sp);
 }
 
 void cpu6502::ROL() {
@@ -646,20 +699,22 @@ void cpu6502::ROL() {
 	}
 	else {
 
-		uint8_t* val = reinterpret_cast<uint8_t*>(0x10000 | addr);		// todo: alter as needed
+		//uint8_t* val = reinterpret_cast<uint8_t*>(0x10000 | addr);		// todo: alter as needed
+		uint8_t val = data;
 
 		// C //
-		if (*val & (1 << 7))
+		if (val & (1 << 7))
 			reg.C = 1;
 		else
 			reg.C = 0;
 
-		*val = *val << 1;
+		val = val << 1;
 		if (tmp)
-			*val = *val | 0x01;
+			m->write((val | 0x01), addr);
+			//*val = *val | 0x01;
 
 		// N //
-		if (*val & (1 << 7))
+		if (val & (1 << 7))
 			reg.N = 1;
 		else
 			reg.N = 0;
@@ -694,20 +749,22 @@ void cpu6502::ROR() {
 			reg.N = 0;
 	}
 	else {
-		uint8_t* val = reinterpret_cast<uint8_t*>(0x10000 | addr);		// todo: alter as needed
+		//uint8_t* val = reinterpret_cast<uint8_t*>(0x10000 | addr);		// todo: alter as needed
+		uint8_t val = data;
 
 		// C //
-		if (*val & (1 << 0))
+		if (val & (1 << 0))
 			reg.C = 1;
 		else
 			reg.C = 0;
 
-		*val = *val >> 1;
+		val = val >> 1;
 		if (tmp)
-			*val = *val | 0x80;
+			//*val = *val | 0x80;
+			m->write((val | 0x80), addr);
 
 		// N //
-		if (*val & (1 << 7))
+		if (val & (1 << 7))
 			reg.N = 1;
 		else
 			reg.N = 0;
@@ -722,12 +779,18 @@ void cpu6502::ROR() {
 
 }
 
+void cpu6502::RTI() {
+
+}
+
 void cpu6502::RTS() {
 	uint16_t jmpAddr = 0x0000;
 	sp++;
-	jmpAddr = *(reinterpret_cast<uint8_t*>(0x10100 | sp));		// todo: should be 0x0100 | sp
+	//jmpAddr = *(reinterpret_cast<uint8_t*>(0x10100 | sp));		// todo: should be 0x0100 | sp
+	jmpAddr = m->read(0x0100 | sp);
 	sp++;
-	jmpAddr |= *(reinterpret_cast<uint8_t*>(0x10100 | sp)) << 8;
+	//jmpAddr |= *(reinterpret_cast<uint8_t*>(0x10100 | sp)) << 8;
+	jmpAddr |= m->read(0x0100 | sp) << 8;
 
 	jmpAddr++;
 	pc = jmpAddr;
@@ -755,15 +818,18 @@ void cpu6502::SEI() {
 }
 
 void cpu6502::STA() {
-	*(reinterpret_cast<uint8_t*>(0x10000 | addr)) = a;
+	//*(reinterpret_cast<uint8_t*>(0x10000 | addr)) = a;
+	m->write(a, addr);
 }
 
 void cpu6502::STX() {
-	*(reinterpret_cast<uint8_t*>(0x10000 | addr)) = x;
+	//*(reinterpret_cast<uint8_t*>(0x10000 | addr)) = x;
+	m->write(x, addr);
 }
 
 void cpu6502::STY() {
-	*(reinterpret_cast<uint8_t*>(0x10000 | addr)) = y;
+	//*(reinterpret_cast<uint8_t*>(0x10000 | addr)) = y;
+	m->write(y, addr);
 }
 
 void cpu6502::TAX() {
@@ -802,6 +868,18 @@ void cpu6502::TAY() {
 
 void cpu6502::TSX() {
 	x = sp;
+
+	// Z //
+	if (x & 0xFF)
+		reg.Z = 0;
+	else
+		reg.Z = 1;
+
+	// N //
+	if (x & (1 << 7))
+		reg.N = 1;
+	else
+		reg.N = 0;
 }
 
 void cpu6502::TXA() {

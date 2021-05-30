@@ -32,5 +32,8 @@
     <ClInclude Include="MemorySimulator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Bus.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

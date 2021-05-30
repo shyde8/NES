@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <iostream>
+#include <fstream>
 #include <iomanip>
 #include <map>
 #include <functional>
@@ -21,6 +22,8 @@ public:
 	void SetMemorySimulator(MemorySimulator*);
 
 private:
+
+	std::ofstream log;
 
 	typedef void(cpu6502::* opcodePtr)();
 	typedef void(cpu6502::* addrModePtr)();
@@ -46,7 +49,7 @@ private:
 	uint8_t x = 0x00;		// x register //
 	uint8_t y = 0x00;		// y register //
 	uint8_t sp = 0xFF;		// stack pointer //
-	uint16_t pc = 0x0000;	// program counter //
+	uint16_t pc = 0xC000;	// program counter //
 
 	union p {				// status register //
 		struct {
@@ -87,6 +90,7 @@ private:
 	void BMI();
 	void BNE();
 	void BPL();
+	void BRK();
 	void BVC();
 	void BVS();
 	void CLC();
@@ -117,6 +121,7 @@ private:
 	void PLP();
 	void ROL();
 	void ROR();
+	void RTI();
 	void RTS();
 	void SBC();
 	void SEC();
@@ -145,10 +150,14 @@ private:
 	void exec_addr();			// invokes the addressing mode function pointer //
 	void exec_opcode();			// invokes the opcode function pointer //
 
+	uint8_t read(uint16_t addr);
+	void write(uint8_t data, uint16_t addr);
+
 	// OPCODE MAP //
 	std::map<uint8_t, Instruction>::iterator it;
 	std::map<uint8_t, Instruction> opcodeMatrix =
 	{
+		{0x00, Instruction(1, 7, &cpu6502::BRK, &cpu6502::IMP)},
 		{0x01, Instruction(2, 6, &cpu6502::ORA, &cpu6502::IDX)},
 		{0x05, Instruction(2, 3, &cpu6502::ORA, &cpu6502::ZPG)},
 		{0x06, Instruction(2, 5, &cpu6502::ASL, &cpu6502::ZPG)},
@@ -184,6 +193,7 @@ private:
 		{0x39, Instruction(3, 4, &cpu6502::AND, &cpu6502::ABY)},
 		{0x3D, Instruction(3, 4, &cpu6502::AND, &cpu6502::ABX)},
 		{0x3E, Instruction(3, 7, &cpu6502::ROL, &cpu6502::ABX)},
+		{0x40, Instruction(1, 6, &cpu6502::RTI, &cpu6502::IMP)},
 		{0x41, Instruction(2, 6, &cpu6502::EOR, &cpu6502::IDX)},
 		{0x45, Instruction(2, 3, &cpu6502::EOR, &cpu6502::ZPG)},
 		{0x46, Instruction(2, 5, &cpu6502::LSR, &cpu6502::ZPG)},
