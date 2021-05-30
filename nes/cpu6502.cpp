@@ -125,7 +125,12 @@ void cpu6502::IMP() {
 
 void cpu6502::IND() {
 	uint8_t tmp = m->read(input);
-	addr = m->read(input + 1);
+	if ((0x00FF & input) == 0x00FF) {
+		addr = m->read(input & 0xFF00);
+	}
+	else {	
+		addr = m->read(input + 1);
+	}	
 	addr = addr << 8;
 	addr |= tmp;
 }
@@ -405,6 +410,18 @@ void cpu6502::CPY() {
 void cpu6502::DEC() {
 	//*(reinterpret_cast<uint8_t*>(0x10000 | addr)) = (data - 1);		// todo: alter as needed
 	m->write(data - 1, addr);
+
+	// Z //
+	if ((data - 1) & 0xFF)
+		reg.Z = 0;
+	else
+		reg.Z = 1;
+
+	// N //
+	if ((data - 1) & (1 << 7))
+		reg.N = 1;
+	else
+		reg.N = 0;
 }
 
 void cpu6502::DEX() {
@@ -462,6 +479,18 @@ void cpu6502::EOR() {
 void cpu6502::INC() {
 	//*(reinterpret_cast<uint8_t*>(0x10000 | addr)) = (data + 1);		// todo: alter as needed
 	m->write(data + 1, addr);
+
+	// Z //
+	if ((data + 1) & 0xFF)
+		reg.Z = 0;
+	else
+		reg.Z = 1;
+
+	// N //
+	if ((data + 1) & (1 << 7))
+		reg.N = 1;
+	else
+		reg.N = 0;
 }
 
 void cpu6502::INX() {
@@ -710,8 +739,8 @@ void cpu6502::ROL() {
 
 		val = val << 1;
 		if (tmp)
-			m->write((val | 0x01), addr);
-			//*val = *val | 0x01;
+			val = val | 0x01;
+		m->write(val, addr);
 
 		// N //
 		if (val & (1 << 7))
@@ -760,8 +789,8 @@ void cpu6502::ROR() {
 
 		val = val >> 1;
 		if (tmp)
-			//*val = *val | 0x80;
-			m->write((val | 0x80), addr);
+			val = val | 0x80;
+		m->write(val, addr);
 
 		// N //
 		if (val & (1 << 7))
@@ -780,7 +809,15 @@ void cpu6502::ROR() {
 }
 
 void cpu6502::RTI() {
+	sp++;
+	reg.pReg = m->read(0x0100 | sp);
 
+	uint16_t jmpAddr = 0x0000;
+	sp++;	
+	jmpAddr = m->read(0x0100 | sp);
+	sp++;
+	jmpAddr |= m->read(0x0100 | sp) << 8;
+	pc = jmpAddr;
 }
 
 void cpu6502::RTS() {

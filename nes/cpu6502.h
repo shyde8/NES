@@ -227,7 +227,7 @@ private:
 		{0x76, Instruction(2, 6, &cpu6502::ROR, &cpu6502::ZPX)},
 		{0x78, Instruction(1, 2, &cpu6502::SEI, &cpu6502::IMP)},
 		{0x79, Instruction(3, 4, &cpu6502::ADC, &cpu6502::ABY)},
-		{0x7D, Instruction(3, 4, &cpu6502::ABX, &cpu6502::ABX)},
+		{0x7D, Instruction(3, 4, &cpu6502::ADC, &cpu6502::ABX)},
 		{0x7E, Instruction(3, 7, &cpu6502::ROR, &cpu6502::ABX)},
 		{0x81, Instruction(2, 6, &cpu6502::STA, &cpu6502::IDX)},
 		{0x84, Instruction(2, 3, &cpu6502::STY, &cpu6502::ZPG)},
